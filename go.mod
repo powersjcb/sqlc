@@ -5,12 +5,18 @@ go 1.14
 require (
 	github.com/antlr/antlr4 v0.0.0-20200209180723-1177c0b58d07
 	github.com/davecgh/go-spew v1.1.1
+	github.com/gofrs/uuid v3.3.0+incompatible // indirect
 	github.com/google/go-cmp v0.3.0
+	github.com/jackc/fake v0.0.0-20150926172116-812a484cc733 // indirect
+	github.com/jackc/pgconn v1.5.0
+	github.com/jackc/pgtype v1.3.0
+	github.com/jackc/pgx/v4 v4.6.0
 	github.com/jinzhu/inflection v1.0.0
 	github.com/lfittl/pg_query_go v1.0.0
 	github.com/lib/pq v1.4.0
 	github.com/pingcap/parser v3.1.1+incompatible
 	github.com/pingcap/tidb v1.1.0-beta.0.20200426094148-df4c9f05c49c
+	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/spf13/cobra v0.0.5
 	google.golang.org/genproto v0.0.0-20191223191004-3caeed10a8bf // indirect
 	google.golang.org/grpc v1.26.0 // indirect
