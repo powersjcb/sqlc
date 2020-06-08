@@ -1,10 +1,9 @@
-// +build examples
-
 package booktest
 
 import (
 	"context"
 	"encoding/json"
+	"github.com/jackc/pgtype"
 	"testing"
 	"time"
 
@@ -12,11 +11,12 @@ import (
 )
 
 func TestBooks(t *testing.T) {
-	db, cleanup := sqltest.PostgreSQL(t, []string{"schema.sql"})
+	ctx, _ := context.WithTimeout(context.Background(), time.Second * 10)
+
+	tx, cleanup := sqltest.PGXSQL(ctx, t, []string{"schema.sql"})
 	defer cleanup()
 
-	ctx := context.Background()
-	dq := New(db)
+	dq := New(tx)
 
 	// create an author
 	a, err := dq.CreateAuthor(ctx, "Unknown Master")
@@ -25,7 +25,7 @@ func TestBooks(t *testing.T) {
 	}
 
 	// create transaction
-	tx, err := db.Begin()
+	tx, err = tx.Begin(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -33,7 +33,16 @@ func TestBooks(t *testing.T) {
 	tq := dq.WithTx(tx)
 
 	// save first book
-	now := time.Now()
+	var now pgtype.Timestamp
+	err = now.Set(time.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	var tags1 pgtype.VarcharArray
+	err = tags1.Set([]string{})
+	if err != nil {
+		t.Fatal(err)
+	}
 	_, err = tq.CreateBook(ctx, CreateBookParams{
 		AuthorID:  a.AuthorID,
 		Isbn:      "1",
@@ -41,13 +50,19 @@ func TestBooks(t *testing.T) {
 		Booktype:  BookTypeFICTION,
 		Year:      2016,
 		Available: now,
-		Tags:      []string{},
+		Tags:      tags1,
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// save second book
+	var tags2 pgtype.VarcharArray
+	err = tags2.Set([]string{"test", "tag2"})
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	b1, err := tq.CreateBook(ctx, CreateBookParams{
 		AuthorID:  a.AuthorID,
 		Isbn:      "2",
@@ -55,7 +70,7 @@ func TestBooks(t *testing.T) {
 		Booktype:  BookTypeFICTION,
 		Year:      2016,
 		Available: now,
-		Tags:      []string{"cool", "unique"},
+		Tags:      tags2,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -71,6 +86,12 @@ func TestBooks(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	var tags3 pgtype.VarcharArray
+	err  = tags3.Set([]string{"cool"})
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	// save third book
 	_, err = tq.CreateBook(ctx, CreateBookParams{
 		AuthorID:  a.AuthorID,
@@ -79,12 +100,16 @@ func TestBooks(t *testing.T) {
 		Booktype:  BookTypeFICTION,
 		Year:      2001,
 		Available: now,
-		Tags:      []string{"cool"},
+		Tags:      tags3,
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
-
+	var tags4 pgtype.VarcharArray
+	err = tags4.Set([]string{"other"})
+	if err != nil {
+		t.Fatal(err)
+	}
 	// save fourth book
 	b3, err := tq.CreateBook(ctx, CreateBookParams{
 		AuthorID:  a.AuthorID,
@@ -93,14 +118,14 @@ func TestBooks(t *testing.T) {
 		Booktype:  BookTypeNONFICTION,
 		Year:      2011,
 		Available: now,
-		Tags:      []string{"other"},
+		Tags:      tags4,
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// tx commit
-	err = tx.Commit()
+	err = tx.Commit(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -125,7 +150,7 @@ func TestBooks(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, book := range books0 {
-		t.Logf("Book %d (%s): %s available: %s\n", book.BookID, book.Booktype, book.Title, book.Available.Format(time.RFC822Z))
+		t.Logf("Book %d (%s): %s available: %s\n", book.BookID, book.Booktype, book.Title, book.Available.Time.Format(time.RFC822Z))
 		author, err := dq.GetAuthor(ctx, book.AuthorID)
 		if err != nil {
 			t.Fatal(err)

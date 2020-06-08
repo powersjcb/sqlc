@@ -3,9 +3,9 @@
   "packages": [
     {
       "name": "booktest",
-      "path": "postgresql",
-      "schema": "postgresql/schema.sql",
-      "queries": "postgresql/query.sql",
+      "path": "stdlibpostgresql",
+      "schema": "stdlibpostgresql/schema.sql",
+      "queries": "stdlibpostgresql/query.sql",
       "engine": "postgresql",
       "emit_empty_json_arrays": false
     },

@@ -5,7 +5,7 @@ package jsonemptyarrays_test
 import (
 	"context"
 	"encoding/json"
-	"github.com/kyleconroy/sqlc/examples/booktest/postgresql/jsonemptyarrays"
+	"github.com/kyleconroy/sqlc/examples/booktest/stdlibpostgresql/jsonemptyarrays"
 	"github.com/kyleconroy/sqlc/internal/sqltest"
 	"testing"
 )

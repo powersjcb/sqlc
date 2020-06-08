@@ -4,7 +4,7 @@ package booktest
 
 import (
 	"fmt"
-	"github.com/jackc/pgtype"
+	"time"
 )
 
 type BookType string
@@ -38,6 +38,6 @@ type Book struct {
 	Booktype  BookType
 	Title     string
 	Year      int32
-	Available pgtype.Timestamp
+	Available time.Time
 	Tags      []string
 }
